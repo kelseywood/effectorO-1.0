@@ -36,6 +36,7 @@ def main():
 	print("Parsing FASTA file...")
 	FASTA_CONTENT_TO_PREDICT = Fasta_Content()
 	FASTA_CONTENT_TO_PREDICT.parse_fasta_file(args.input_fasta)
+	print("Calculating sequence features...")
 	seq_features = array([get_average_features(seq) for seq in FASTA_CONTENT_TO_PREDICT.get_sequences()])
 
 	print("Importing ML model...")
