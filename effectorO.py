@@ -14,10 +14,16 @@ from src.get_average_features import get_average_features
 ##    2) (optional) model file path (will default to best Random Forest)
 
 ## RUN LIKE THIS:
-##    python3.6 predict_effectors.py {INPUT_FASTA_PATH}
+##    Using conda: python3 effectorO.py -i {INPUT_FASTA_PATH}
+##    Using requirements.txt: python3.6 effectorO.py {INPUT_FASTA_PATH}
 
 ## output:
-##    1) csv of IDs|class_prediction|meaning|probability_of_prediction
+##    1) csv conatining (by column):
+##			 - protein_id from FASTA file
+##			 - sequence from FASTA file
+##			 - prediction - 0=non_effector | 1=effector
+##			 - probability that a sequence is an effector
+##			 - meaning - verbose string version of prediction
 ##    2) fasta file of predicted effectors
 
 
