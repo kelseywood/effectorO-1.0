@@ -6,8 +6,8 @@ from numpy import array, round
 import pandas as pd
 from joblib import load
 
-from src.fasta_content import Fasta_Content
-from src.get_average_features import get_average_features
+from ml_src.fasta_content import Fasta_Content
+from ml_src.get_average_features import get_average_features
 
 ## take in:
 ##    1) secreted proteins fasta file

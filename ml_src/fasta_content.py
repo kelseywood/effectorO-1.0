@@ -13,7 +13,7 @@ class Fasta_Content:
   def __init__(self)->None:
     return
   
-  def parse_fasta_file(self, file:FileType('r'))->None:
+  def parse_fasta_file(self, file:FileType)->None:
     """
     Parses an opened FASTA file for all of its IDs and sequences
     """
