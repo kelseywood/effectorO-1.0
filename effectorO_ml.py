@@ -6,7 +6,7 @@ from numpy import array, round
 import pandas as pd
 from joblib import load
 
-from ml_src.fasta_content import Fasta_Content
+from gen_src.fasta_content import Fasta_Content
 from ml_src.get_average_features import get_average_features
 
 ## take in:
