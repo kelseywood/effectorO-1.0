@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, FileType
 from os import makedirs
-from os.path import exists
+from os.path import exists, join
 from time import sleep
 from numpy import array, round
 import pandas as pd
@@ -85,11 +85,11 @@ def main():
 	makedirs(OUTPUT_DIR, exist_ok=True)
 
 	print("Constructing a CSV containing information on sequences from the FASTA file...")
-	csv_filename = f"{OUTPUT_DIR}/{FASTA_CONTENT_TO_PREDICT.get_fasta_filename()}.effector_classification_table.csv"
+	csv_filename = join(OUTPUT_DIR, f"{FASTA_CONTENT_TO_PREDICT.get_fasta_filename()}.effector_classification_table.csv")
 	result_df.to_csv(csv_filename, index=False)
 
 	print("Constructing a FASTA file with just predicted effectors...")
-	out_filename = f"{OUTPUT_DIR}/{FASTA_CONTENT_TO_PREDICT.get_fasta_filename()}.predicted_effectors.fasta"
+	out_filename = join(OUTPUT_DIR, f"{FASTA_CONTENT_TO_PREDICT.get_fasta_filename()}.predicted_effectors.fasta")
 	with open(out_filename, 'w') as outfile:
 		predicted_effectors = result_df[result_df['meaning'].astype(str) == "predicted_effector"]
 		seqs_to_write = ('>' + predicted_effectors["protein_id"].astype(str) + ' ' +
