@@ -1,4 +1,4 @@
-import src.FEAT as FEAT
+import ml_src.FEAT as FEAT
 
 def get_average_features(sequence:str)->list:
 	"""
