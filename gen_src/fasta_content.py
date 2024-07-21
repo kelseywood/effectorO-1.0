@@ -1,5 +1,5 @@
-from argparse import FileType
-from Bio.SeqIO import parse
+import os
+from Bio import SeqIO
 
 AMINO_ACIDS = {'A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y'}
 
@@ -13,17 +13,22 @@ class Fasta_Content:
   def __init__(self)->None:
     return
 
-  def parse_fasta_file(self, file:FileType)->None:
+  def parse_fasta_file(self, file:str)->None:
     """
     Parses an opened FASTA file for all of its IDs and sequences
     """
 
+    basename, extension = os.path.splitext(os.path.basename(file))
+    
+    # ensure that FASTA file has a FASTA extension
+    if not extension.replace('.', '') in {"fasta", "fas", "fa", "fna", "ffn", "faa", "mpfa", "frn"}:
+        raise ValueError
+
     # get FASTA file name
-    fasta_filename = str(file.name)
-    self.fasta_filename = fasta_filename[fasta_filename.rfind('/')+1:fasta_filename.find('.')]
+    self.fasta_filename = os.path.splitext(os.path.basename(file))[0]
 
     # parse FASTA file for sequence content
-    for record in parse(file, 'fasta'):
+    for record in SeqIO.parse(file, 'fasta'):
       self.fasta_content[record.id] = record.seq
 
   def get_fasta_filename(self)->str:
@@ -33,10 +38,11 @@ class Fasta_Content:
     """
     Returns all IDs from a FASTA file.
     """
-    return self.fasta_content.keys()
+    return list(self.fasta_content.keys())
 
   def get_sequences(self)->list:
     """
     Returns all sequences from a FASTA file.
     """
-    return self.fasta_content.values()
+    return list(self.fasta_content.values())
+

@@ -1,10 +1,18 @@
+import sys
+import os
 from argparse import ArgumentParser, FileType
+<<<<<<< Updated upstream
 from os import makedirs
-from os.path import exists
+from os.path import exists, join
+=======
+>>>>>>> Stashed changes
 from time import sleep
 from numpy import array, round
 import pandas as pd
 from joblib import load
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(SCRIPT_DIR)
 
 from gen_src.fasta_content import Fasta_Content
 from ml_src.get_average_features import get_average_features
@@ -28,14 +36,14 @@ from ml_src.get_average_features import get_average_features
 
 
 def import_ml_model(model_path:str):
-	if model_path == None: model_path = "trained_models/RF_88_best.sav"
+	if model_path == None: model_path = os.path.join(SCRIPT_DIR, "trained_models", "RF_88_best.sav")
 	with open(model_path, 'rb') as fmodel:
 		return load(fmodel)
 
 
 def main():
 	parser = ArgumentParser(prog="A Python script to run EffectorO.")
-	parser.add_argument("-i", "--input_fasta", type=FileType('r'), help="Input FASTA file", required=True)
+	parser.add_argument("-i", "--input_fasta", type=str, help="Input FASTA file", required=True)
 	parser.add_argument("-m", "--model_path", type=str, help="Path to trained model to be used [default: provided Random Forest model]", required=False)
 	args = parser.parse_args()
 
@@ -78,18 +86,26 @@ def main():
 	print(f"\nCounts of predicted classes:\n{result_df['meaning'].value_counts().to_string(header=False)}\n")
 
 	print("Creating a directory for EffectorO outputs...")
-	OUTPUT_DIR = "effectoro_results/"
-	if exists(OUTPUT_DIR):
+	OUTPUT_DIR = "effectoro_results"
+	if os.path.exists(OUTPUT_DIR):
 		print("Warning: directory 'effectoro_results' already exists. Replacing its contents in 3 seconds...")
 		sleep(3)
-	makedirs(OUTPUT_DIR, exist_ok=True)
+	os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 	print("Constructing a CSV containing information on sequences from the FASTA file...")
-	csv_filename = f"{OUTPUT_DIR}/{FASTA_CONTENT_TO_PREDICT.get_fasta_filename()}.effector_classification_table.csv"
+<<<<<<< Updated upstream
+	csv_filename = join(OUTPUT_DIR, f"{FASTA_CONTENT_TO_PREDICT.get_fasta_filename()}.effector_classification_table.csv")
 	result_df.to_csv(csv_filename, index=False)
 
 	print("Constructing a FASTA file with just predicted effectors...")
-	out_filename = f"{OUTPUT_DIR}/{FASTA_CONTENT_TO_PREDICT.get_fasta_filename()}.predicted_effectors.fasta"
+	out_filename = join(OUTPUT_DIR, f"{FASTA_CONTENT_TO_PREDICT.get_fasta_filename()}.predicted_effectors.fasta")
+=======
+	csv_filename = os.path.join(OUTPUT_DIR, FASTA_CONTENT_TO_PREDICT.get_fasta_filename() + ".effector_classification_table.csv")
+	result_df.to_csv(csv_filename, index=False)
+
+	print("Constructing a FASTA file with just predicted effectors...")
+	out_filename = os.path.join(OUTPUT_DIR, FASTA_CONTENT_TO_PREDICT.get_fasta_filename() + ".predicted_effectors.fasta")
+>>>>>>> Stashed changes
 	with open(out_filename, 'w') as outfile:
 		predicted_effectors = result_df[result_df['meaning'].astype(str) == "predicted_effector"]
 		seqs_to_write = ('>' + predicted_effectors["protein_id"].astype(str) + ' ' +
