@@ -1,3 +1,6 @@
+import os
+from time import sleep
+from shutil import rmtree
 from argparse import ArgumentParser
 from subprocess import run
 
@@ -14,12 +17,22 @@ def main():
   fasta:str       = args.input_fasta
   genome_name:str = args.genome_name
 
+  OUTDIR = "effectoro-lsp_results"
+  if os.path.exists(OUTDIR):
+    print(f"Warning: directory '{OUTDIR}' already exists. Replacing its contents in 3 seconds...")
+    sleep(3)
+    rmtree(OUTDIR)
+  os.makedirs(OUTDIR, exist_ok=False)
+
+  outfilename = os.path.join(OUTDIR, f"sp_{genome_name}_vs_all.tab")
   NcbiblastpCommandline(cmd="blastp",
                         db=database,
                         query=fasta,
                         outfmt="6 std qcovs",
                         num_threads=4,
-                        out=f"sp_{genome_name}_vs_all.tab")()
+                        out=outfilename)()
+
+  run(args=["Rscript", "lsp_src/getLSGs.R", outfilename])
 
 
 if __name__ == "__main__":
