@@ -1,11 +1,6 @@
 import sys
 import os
 from argparse import ArgumentParser, FileType
-<<<<<<< Updated upstream
-from os import makedirs
-from os.path import exists, join
-=======
->>>>>>> Stashed changes
 from time import sleep
 from numpy import array, round
 import pandas as pd
@@ -93,19 +88,11 @@ def main():
 	os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 	print("Constructing a CSV containing information on sequences from the FASTA file...")
-<<<<<<< Updated upstream
-	csv_filename = join(OUTPUT_DIR, f"{FASTA_CONTENT_TO_PREDICT.get_fasta_filename()}.effector_classification_table.csv")
-	result_df.to_csv(csv_filename, index=False)
-
-	print("Constructing a FASTA file with just predicted effectors...")
-	out_filename = join(OUTPUT_DIR, f"{FASTA_CONTENT_TO_PREDICT.get_fasta_filename()}.predicted_effectors.fasta")
-=======
 	csv_filename = os.path.join(OUTPUT_DIR, FASTA_CONTENT_TO_PREDICT.get_fasta_filename() + ".effector_classification_table.csv")
 	result_df.to_csv(csv_filename, index=False)
 
 	print("Constructing a FASTA file with just predicted effectors...")
 	out_filename = os.path.join(OUTPUT_DIR, FASTA_CONTENT_TO_PREDICT.get_fasta_filename() + ".predicted_effectors.fasta")
->>>>>>> Stashed changes
 	with open(out_filename, 'w') as outfile:
 		predicted_effectors = result_df[result_df['meaning'].astype(str) == "predicted_effector"]
 		seqs_to_write = ('>' + predicted_effectors["protein_id"].astype(str) + ' ' +
