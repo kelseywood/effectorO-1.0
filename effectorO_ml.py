@@ -1,7 +1,7 @@
 import sys
 import os
+from io import StringIO
 from argparse import ArgumentParser
-from time import sleep
 from numpy import ndarray, array, round
 import pandas as pd
 from joblib import load
@@ -30,23 +30,32 @@ from ml_src.get_average_features import get_average_features
 ##    2) fasta file of predicted effectors
 
 
-def _analyze_fasta(fasta_input:str):
+def __get_seq_features(fasta_content:Fasta_Content):
+	print("Calculating sequence features...")
+	return array([get_average_features(seq) for seq in fasta_content.get_sequences()])
+
+def _analyze_fasta_cli(fasta_input:str):
 	print("Parsing FASTA file...")
 	fasta_content = Fasta_Content()
 	fasta_content.parse_fasta_file(fasta_input)
-	print("Calculating sequence features...")
-	seq_features = array([get_average_features(seq) for seq in fasta_content.get_sequences()])
+	seq_features = __get_seq_features(fasta_content)
 	return (fasta_content, seq_features)
 
-def __import_ml_model(model_path:str):
+def _analyze_fasta_api(filename:str, content:str):
+	fasta_content = Fasta_Content()
+	fasta_content.parse_fasta_content(filename, content)
+	seq_features = __get_seq_features(fasta_content)
+	return (fasta_content, seq_features)
+
+def ___import_ml_model(model_path:str):
 	with open(model_path, 'rb') as fmodel:
 		return load(fmodel)
 
-def _analyze_model_path(model_path_input, seq_features:ndarray):
+def __analyze_model_path(model_path_input, seq_features:ndarray):
 	print("Importing ML model...")
 	model_path = str(model_path_input) if (model_path_input) else os.path.join(SCRIPT_DIR, "trained_models", "RF_88_best.sav")
 	model_name = os.path.splitext(os.path.basename(model_path))[0]
-	model = __import_ml_model(model_path)
+	model = ___import_ml_model(model_path)
 	print("Sequences to run secreted oomycete-trained " +
 			 	f"{'Random Forest' if (model_name == 'RF_88_best') else (model_name)} " +
 				f"effector classifier on: {len(seq_features)}")
@@ -59,7 +68,7 @@ def _analyze_model_path(model_path_input, seq_features:ndarray):
 					"\n**END OF NOTES**\n")
 	return model
 
-def _predict_effectors(model, seq_features:ndarray, fasta_content:Fasta_Content):
+def __predict_effectors(model, seq_features:ndarray, fasta_content:Fasta_Content):
 	print("Predicting effectors amongst FASTA sequences...")
 	predictions = model.predict(seq_features)
 	probabilities = model.predict_proba(seq_features)
@@ -96,18 +105,32 @@ def _create_fasta(predictions_df:pd.DataFrame, filepath:str):
 		]
 		outfile.writelines(seqs_to_write)
 
-def run_effectoro_ml(input_fasta:str, model_path, output_dir:str):
-	fasta_content_to_predict, seq_features = _analyze_fasta(input_fasta)
-	model = _analyze_model_path(model_path, seq_features)
-	predictions_df = _predict_effectors(model, seq_features, fasta_content_to_predict)
+def _run_effectoro_ml(fasta_content_to_predict, seq_features, model_path=None, output_dir:str=None):
+	model = __analyze_model_path(model_path, seq_features)
+	predictions_df = __predict_effectors(model, seq_features, fasta_content_to_predict)
+	return predictions_df
+
+def run_effectoro_ml_through_cli(input_fasta:str, model_path, output_dir:str):
+	fasta_content_to_predict, seq_features = _analyze_fasta_cli(input_fasta)
+	predictions = _run_effectoro_ml(fasta_content_to_predict, seq_features, model_path, output_dir)
+	
 	output_dir = _create_output_dir(output_dir)
 	csv_filepath = os.path.join(output_dir, fasta_content_to_predict.get_fasta_filename() + ".effector_classification_table.csv")
-	_create_csv(predictions_df, csv_filepath)
+	_create_csv(predictions, csv_filepath)
 	fasta_filepath = os.path.join(output_dir, fasta_content_to_predict.get_fasta_filename() + ".predicted_effectors.fasta")
-	_create_fasta(predictions_df, fasta_filepath)
+	_create_fasta(predictions, fasta_filepath)
 
 	print(f"\nOutput fasta of predicted effectors available in:\n{fasta_filepath}")
 	print(f"\nDetailed CSV with fasta IDs | sequences | predictions | probabilities in:\n{csv_filepath}\n")
+
+def run_effectoro_ml_through_api(file_name: str, fasta_content:str)->str:
+	sys.stdout = open(os.devnull, 'w')
+	sys.stderr = open(os.devnull, 'w')
+	fasta_content_to_predict, seq_features = _analyze_fasta_api(file_name, fasta_content)
+	predictions = _run_effectoro_ml(fasta_content_to_predict, seq_features)
+	csv_buffer = StringIO()
+	predictions.to_csv(csv_buffer, index=False)
+	return csv_buffer.getvalue()
 
 
 if __name__ == "__main__":
@@ -124,4 +147,4 @@ if __name__ == "__main__":
 		sys.stderr = open(os.devnull, 'w')
 
 	# run the effectoro-ML script
-	run_effectoro_ml(args.input_fasta, args.model_path, args.output_dir)
+	run_effectoro_ml_through_cli(args.input_fasta, args.model_path, args.output_dir)
