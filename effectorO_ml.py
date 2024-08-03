@@ -68,20 +68,39 @@ def __analyze_model_path(model_path_input, seq_features:ndarray):
 					"\n**END OF NOTES**\n")
 	return model
 
-def __predict_effectors(model, seq_features:ndarray, fasta_content:Fasta_Content):
-	print("Predicting effectors amongst FASTA sequences...")
-	predictions = model.predict(seq_features)
-	probabilities = model.predict_proba(seq_features)
-	PREDICTION_MAP = {'0': "predicted_non-effector", '1': "predicted_effector"}
-	meanings = array([PREDICTION_MAP[pred] for pred in predictions])
-	result_df = pd.DataFrame({"protein_id": fasta_content.get_ids(),
-														"sequence": fasta_content.get_sequences(),
-														"prediction": predictions,
-														"probability": probabilities[:,1],
-														"meaning": meanings})
-	result_df['probability'] = round(result_df['probability'], 2)
-	print(f"\nCounts of predicted classes:\n{result_df['meaning'].value_counts().to_string(header=False)}\n")
-	return result_df
+def __predict_effectors(model, seq_features: ndarray, fasta_content):
+    print("Predicting effectors amongst FASTA sequences...")
+    
+    # Ensure seq_features is a 2D array
+    if seq_features.ndim == 1:
+        seq_features = array(seq_features).reshape(1, -1)
+    elif seq_features.ndim > 2:
+        raise ValueError("seq_features should be a 1D or 2D array")
+    
+    # Perform predictions
+    predictions = model.predict(seq_features)
+    probabilities = model.predict_proba(seq_features)
+    
+    # Map predictions to meanings
+    PREDICTION_MAP = {'0': "predicted_non-effector", '1': "predicted_effector"}
+    meanings = array([PREDICTION_MAP[str(pred)] for pred in predictions])
+    
+    # Create the result DataFrame
+    result_df = pd.DataFrame({
+        "protein_id": fasta_content.get_ids(),
+        "sequence": fasta_content.get_sequences(),
+        "prediction": predictions,
+        "probability": probabilities[:, 1],
+        "meaning": meanings
+    })
+    
+    # Round probabilities
+    result_df['probability'] = round(result_df['probability'], 2)
+    
+    # Print counts of predicted classes
+    print(f"\nCounts of predicted classes:\n{result_df['meaning'].value_counts().to_string(header=False)}\n")
+    
+    return result_df
 
 def _create_output_dir(output_dir:str):
 	print("Creating a directory of EffectorO outputs...")
