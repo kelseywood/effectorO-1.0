@@ -67,10 +67,13 @@ def _create_csv(predictions_df:pd.DataFrame, filepath:str):
 	print("Constructing a CSV containing information on sequences from the FASTA file...")
 	predictions_df.to_csv(filepath, index=False)
 
-def _create_fasta(predictions_df:pd.DataFrame, filepath:str):
+def _create_fasta(predictions_df:pd.DataFrame, filepath:str, effector_prediction_type:str=None):
 	print("Constructing a FASTA file with just predicted effectors...")
 	with open(filepath, 'w') as outfile:
-		predicted_effectors = predictions_df[predictions_df['meaning'].astype(str) == "predicted_effector"]
+		predicted_effectors = (
+			(predictions_df[predictions_df['meaning'].astype(str) == effector_prediction_type])
+				if effector_prediction_type else predictions_df
+		)
 		seqs_to_write = [
 				f">{row['protein_id']} {row['meaning']} probability={row['probability']}\n{row['sequence']}\n"
 				for _, row in predicted_effectors.iterrows()
@@ -101,11 +104,17 @@ def run_effectoro_ml_through_cli(input_fasta:str, model_path, output_dir:str):
 	output_dir = _create_output_dir(output_dir)
 	csv_filepath = os.path.join(output_dir, fasta_content_to_predict.get_fasta_filename() + ".effector_classification_table.csv")
 	_create_csv(predictions, csv_filepath)
-	fasta_filepath = os.path.join(output_dir, fasta_content_to_predict.get_fasta_filename() + ".predicted_effectors.fasta")
-	_create_fasta(predictions, fasta_filepath)
+	pef_fasta_filepath = os.path.join(output_dir, fasta_content_to_predict.get_fasta_filename() + ".predicted_effectors.fasta")
+	_create_fasta(predictions, pef_fasta_filepath, "predicted_effector")
+	pnef_fasta_filepath = os.path.join(output_dir, fasta_content_to_predict.get_fasta_filename() + ".predicted_non-effectors.fasta")
+	_create_fasta(predictions, pnef_fasta_filepath, "predicted_non-effector")
+	all_fasta_filepath = os.path.join(output_dir, fasta_content_to_predict.get_fasta_filename() + ".all_effector_predictions.fasta")
+	_create_fasta(predictions, all_fasta_filepath)
 
-	print(f"\nOutput fasta of predicted effectors available in:\n{fasta_filepath}\n" +
-				f"\nDetailed CSV with fasta IDs | sequences | predictions | probabilities in:\n{csv_filepath}\n")
+	print(f"\nOutput fasta of predicted effectors available in:\n{pef_fasta_filepath}\n" +
+			  f"\nOutput fasta of predicted non-effectors available in:\n{pnef_fasta_filepath}\n" +
+				f"\nOutput fasta of all effector predictions available in:\n{all_fasta_filepath}\n" +
+				f"\nDetailed CSV with seqeunce IDs | sequences | predictions | probabilities in:\n{csv_filepath}\n")
 
 def run_effectoro_ml_through_api(file_name: str, fasta_content:str)->pd.DataFrame:
 	fasta_content_to_predict, seq_features = _analyze_fasta_api(file_name, fasta_content)
