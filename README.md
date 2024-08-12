@@ -45,12 +45,12 @@ pip install -r environment_setup/requirements.txt
 ```
 -->
 
-## Running EffectorO
+## Running EffectorO-ML
 
 After dependencies are installed either on your machine or provided by an environment, you can run EffectorO using this command:
 
 ```bash
-python3 effectorO.py -i PATH/TO/INPUT_FILE.fasta
+python3 effectorO_ml.py -i PATH/TO/INPUT_FILE.fasta
 ```
 
 Once EffectorO is done running, your results can be found in the `effectoro_results` directory.
