@@ -5,13 +5,13 @@ from Bio import SeqIO
 AMINO_ACIDS = {'A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y'}
 
 class Fasta_Content:
-  fasta_filename = str()
   """
   FASTA file name without directories and '.fasta'
   """
-  fasta_content = dict()
 
   def __init__(self)->None:
+    self.fasta_filename = str()
+    self.fasta_content = dict()
     return
 
   def _parse(self, file):
